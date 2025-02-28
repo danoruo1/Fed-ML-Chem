@@ -1,0 +1,6 @@
+data
+*.pkl
+results
+*.pt
+*pycache*
+.DS_Store
