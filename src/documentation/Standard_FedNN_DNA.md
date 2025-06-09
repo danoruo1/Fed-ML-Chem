@@ -1,49 +1,50 @@
-# Standard Federated Neural Network for DNA Dataset
+## Standard Federated Neural Network for DNA Dataset
 
-## Overview
-This notebook implements a federated learning approach for the DNA dataset using the Flower framework. It distributes the training across multiple clients, with each client training on a subset of the data, and then aggregates the model parameters.
+### Overview  
+This notebook uses federated learning to train on the DNA dataset. Instead of using one central dataset, it splits the data across multiple clients. Each client trains on its own subset, and the server aggregates their models using the Flower framework.
 
-## Model Architecture
-- Uses a simple fully connected neural network (MLP)
-- 5 linear layers with ReLU activations:
-  - fc1: input_sp → 64 neurons
-  - fc2: 64 → 32 neurons
-  - fc3: 32 → 16 neurons
-  - fc4: 16 → 8 neurons
-  - fc5: 8 → num_classes (output layer)
-- The input size (input_sp) is determined dynamically from the data
+### Model Architecture  
+- A simple MLP with 5 fully connected layers and ReLU activations:  
+  - fc1: input_sp → 64  
+  - fc2: 64 → 32  
+  - fc3: 32 → 16  
+  - fc4: 16 → 8  
+  - fc5: 8 → num_classes (final layer)  
+- `input_sp` is dynamically determined based on the dataset  
 
-## Dataset
-- DNA dataset with 7 classes ('0', '1', '2', '3', '4', '5', '6')
-- Uses DNA sequence data rather than images
-- Data is processed using text/sequence processing techniques
-- Data is split across 10 clients for federated learning
-- Each client's data is further split between training and validation sets with a 90/10 ratio
+### Dataset  
+- DNA sequence classification with 7 total classes: '0' through '6'  
+- Data is sequence-based, not image-based  
+- Preprocessing is done using standard text/sequence methods  
+- The dataset is divided across 10 clients  
+- Each client's dataset is split 90% training, 10% validation  
 
-## Training Approach
-- Uses a federated learning approach with 10 clients
-- Adam optimizer with learning rate of 1e-3
-- CrossEntropyLoss as the loss function
-- Each client trains for 10 epochs per round
-- Runs for 20 rounds of federated learning
-- Implements a custom federated learning strategy (FedCustom) that:
-  - Aggregates model parameters using weighted averaging
-  - Saves model checkpoints after each round
-  - Evaluates the model on a test set
-  - Uses different learning rates for different clients (standard lr for first half, higher lr for second half)
+### Training Approach  
+- Fully federated setup with 10 clients  
+- Optimizer: Adam with learning rate = 1e-3  
+- Loss: CrossEntropyLoss  
+- Each client trains for 10 epochs in each round  
+- Runs for a total of 20 rounds  
+- A custom federated strategy (FedCustom) is used that:  
+  - Averages model weights across all clients  
+  - Saves the model after each round  
+  - Evaluates the model centrally  
+  - Uses two learning rates:  
+    - First half of the clients use standard `lr`  
+    - Second half use a higher learning rate  
 
-## Key Parameters
-- `number_clients`: 10 (true federated approach)
-- `max_epochs`: 10 (epochs per round)
-- `batch_size`: 16
-- `lr`: 1e-3 (standard learning rate)
-- `rounds`: 20 (rounds of federated learning)
-- `frac_fit`: 1.0 (fraction of clients used for training)
-- `frac_eval`: 0.5 (fraction of clients used for evaluation)
+### Key Parameters  
+- `number_clients`: 10  
+- `max_epochs`: 10  
+- `batch_size`: 16  
+- `lr`: 1e-3  
+- `rounds`: 20  
+- `frac_fit`: 1.0  
+- `frac_eval`: 0.5  
 
-## Results and Visualization
-The notebook generates and saves:
-- Confusion matrix for model evaluation
-- ROC curves for performance analysis
-- Training and validation accuracy/loss curves for each client
-- Results are saved in the 'results/FL_DNA/' directory
+### Results and Visualization  
+This notebook outputs:  
+- Confusion matrix for final model evaluation  
+- ROC curves for each class  
+- Training and validation accuracy/loss plots per client  
+- Results are saved in `results/FL_DNA/`

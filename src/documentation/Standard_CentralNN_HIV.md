@@ -1,55 +1,55 @@
-# Standard Centralized Neural Network for HIV Dataset
+## Standard Centralized Neural Network for HIV Dataset
 
-## Overview
-This notebook implements a centralized neural network approach for the HIV dataset using graph neural networks. Although it uses the Flower federated learning framework, it's configured with only one client, effectively making it a centralized learning approach. The model processes molecular graph data to classify HIV inhibition activity.
+### Overview  
+This notebook trains a centralized neural network on the HIV dataset using a graph-based approach. It uses the Flower framework with one client, so it functions like a standard centralized setup. The model works with molecular graph data to predict whether a compound is active or inactive against HIV.
 
-## Model Architecture
-- Uses a Graph Convolutional Network (GCN) architecture
-- Network structure:
-  - Initial GCNConv layer: 9 → embedding_size features
-  - Three additional GCNConv layers with tanh activations
-  - Global pooling (combining max and mean pooling)
-  - Final linear classifier: embedding_size*2 → num_classes
-- The model processes molecular graphs where:
-  - Nodes represent atoms
-  - Edges represent bonds
-  - Node features include atomic properties
-  - The graph structure captures molecular topology
+### Model Architecture  
+- Graph Convolutional Network (GCN) setup  
+- Structure:  
+  - Starts with a GCNConv layer: 9 → `embedding_size`  
+  - Followed by three more GCNConv layers with tanh activations  
+  - Uses global pooling (max + mean) to combine graph-level features  
+  - Final linear layer maps the pooled output to class predictions  
+- Each graph:  
+  - Nodes = atoms  
+  - Edges = bonds  
+  - Node features include chemical properties  
+  - The graph layout represents molecule structure  
 
-## Dataset
-- HIV dataset with binary classification:
-  - 'confirmed inactive (CI)'
-  - 'confirmed active (CA)/confirmed moderately active (CM)'
-- Uses molecular graph data from the MoleculeNet collection
-- Data is processed using PyTorch Geometric
-- Data is split between training and validation sets with a 90/10 ratio
+### Dataset  
+- HIV dataset for binary classification:  
+  - 'CI' = confirmed inactive  
+  - 'CA' or 'CM' = confirmed (moderately) active  
+- Comes from MoleculeNet  
+- Graph data is handled with PyTorch Geometric  
+- Dataset is split 90% training, 10% validation  
 
-## Training Approach
-- Uses a centralized approach (1 client) with the Flower framework
-- Custom RMSELoss (Root Mean Square Error) as the loss function
-- Adam optimizer with learning rate of 1e-3
-- Trains for 25 epochs
-- Uses specialized training and evaluation functions for graph data:
-  - engine.train with task="Graph"
-  - engine.test_graph
-- Implements a custom federated learning strategy (FedCustom) that:
-  - Aggregates model parameters using weighted averaging
-  - Saves model checkpoints after each round
-  - Evaluates the model on a test set
+### Training Approach  
+- Runs on one client using the Flower framework  
+- Loss function: custom RMSELoss  
+- Optimizer: Adam, learning rate = 1e-3  
+- Training runs for 25 epochs  
+- Custom train and test functions specific for graph data:  
+  - `engine.train(task="Graph")`  
+  - `engine.test_graph()`  
+- Uses a custom federated strategy (FedCustom):  
+  - Aggregates parameters with weighted averaging  
+  - Saves a checkpoint after each round  
+  - Evaluates using a test set  
 
-## Key Parameters
-- `number_clients`: 1 (centralized approach)
-- `max_epochs`: 25
-- `embedding_size`: 64 (dimension of node embeddings)
-- `batch_size`: 64
-- `lr`: 1e-3
-- `rounds`: 1 (only one round of federated learning)
-- `frac_fit`: 1.0 (fraction of clients used for training)
-- `frac_eval`: 0.5 (fraction of clients used for evaluation)
+### Key Parameters  
+- `number_clients`: 1  
+- `max_epochs`: 25  
+- `embedding_size`: 64  
+- `batch_size`: 64  
+- `lr`: 1e-3  
+- `rounds`: 1  
+- `frac_fit`: 1.0  
+- `frac_eval`: 0.5  
 
-## Results and Visualization
-The notebook generates and saves:
-- Confusion matrix for model evaluation
-- ROC curves for performance analysis
-- Training and validation accuracy/loss curves
-- Results are saved in the 'results/CL_HIV/' directory
+### Results and Visualization  
+This notebook saves:  
+- Confusion matrix for performance visualization  
+- ROC curve for evaluating classification quality  
+- Accuracy and loss curves over training and validation  
+- Outputs go to `results/CL_HIV/`

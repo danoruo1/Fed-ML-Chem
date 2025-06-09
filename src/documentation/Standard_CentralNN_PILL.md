@@ -1,46 +1,46 @@
-# Standard Centralized Neural Network for PILL Dataset
+## Standard Centralized Neural Network for PILL Dataset
 
-## Overview
-This notebook implements a centralized neural network approach for the PILL dataset. Although it uses the Flower federated learning framework, it's configured with only one client, effectively making it a centralized learning approach.
+### Overview  
+This notebook trains a centralized neural network on the PILL dataset using one client in the Flower framework — so it's technically centralized, even though federated tools are used.
 
-## Model Architecture
-- Uses a CNN model based on VGG16 pretrained on ImageNet
-- The feature extractor is from VGG16 with the last layer removed
-- A custom classification head is added with:
-  - MaxPool2d
-  - AvgPool2d
-  - Flatten
-  - Linear layer for classification
-- The first 23 layers of the feature extractor are frozen (weights not updated during training)
+### Model Architecture  
+- The model uses a VGG16 backbone pretrained on ImageNet  
+- Feature extractor comes from VGG16, with the last layer removed  
+- A custom classifier is stacked on top with:  
+  - MaxPool2d  
+  - AvgPool2d  
+  - Flatten  
+  - Final Linear layer for output  
+- First 23 layers of the backbone are frozen during training (weights stay fixed)  
 
-## Dataset
-- PILL dataset with binary classification ('bad', 'good')
-- Images are resized to 256x256 pixels
-- Data is normalized using ImageNet normalization values
-- Data is split between training and validation sets with a 90/10 ratio
+### Dataset  
+- Binary image classification: labels are either 'bad' or 'good'  
+- Images are resized to 256x256  
+- ImageNet normalization is applied to the input images  
+- Training/validation split is 90% / 10%  
 
-## Training Approach
-- Uses a centralized approach (1 client) with the Flower framework
-- Adam optimizer with learning rate of 2e-4
-- CrossEntropyLoss as the loss function
-- Trains for 25 epochs
-- Implements a custom federated learning strategy (FedCustom) that:
-  - Aggregates model parameters using weighted averaging
-  - Saves model checkpoints after each round
-  - Evaluates the model on a test set
+### Training Approach  
+- All training is done centrally on one client with the Flower framework  
+- Optimizer: Adam with a learning rate of 2e-4  
+- Loss function: CrossEntropyLoss  
+- Training runs for 25 epochs  
+- A custom federated strategy (FedCustom) is used that:  
+  - Aggregates weights after training (weighted average)  
+  - Saves checkpoints at every round  
+  - Evaluates the model on the test set after each round  
 
-## Key Parameters
-- `number_clients`: 1 (centralized approach)
-- `max_epochs`: 25
-- `batch_size`: 32
-- `lr`: 2e-4
-- `rounds`: 1 (only one round of federated learning)
-- `frac_fit`: 1.0 (fraction of clients used for training)
-- `frac_eval`: 1.0 (fraction of clients used for evaluation)
+### Key Parameters  
+- `number_clients`: 1  
+- `max_epochs`: 25  
+- `batch_size`: 32  
+- `lr`: 2e-4  
+- `rounds`: 1  
+- `frac_fit`: 1.0  
+- `frac_eval`: 1.0  
 
-## Results and Visualization
-The notebook generates and saves:
-- Confusion matrix for model evaluation
-- ROC curves for performance analysis
-- Training and validation accuracy/loss curves
-- Results are saved in the 'results/CL_PILL/' directory
+### Results and Visualization  
+This notebook outputs:  
+- Confusion matrix for predictions  
+- ROC curves for performance evaluation  
+- Training/validation accuracy and loss curves  
+- All results are saved in `results/CL_PILL/`
