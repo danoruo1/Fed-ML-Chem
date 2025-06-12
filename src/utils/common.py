@@ -119,7 +119,8 @@ def classes_string(name_dataset):
 
     elif name_dataset == "Wafer":
         classes = ('Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Near-full', 'Random', 'Scratch', 'none')
-        
+    elif name_dataset in "breast_cancer" or "breast_cancer" in name_dataset:
+        classes = ('IDC', 'ILC', 'IMM', 'MDLC', 'MBC')
     else:
         print("Warning problem : unspecified dataset")
         return ()

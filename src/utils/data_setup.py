@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader as TorchDataLoader
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils import shuffle
+from sklearn.preprocessing import StandardScaler
 import pickle
 from .common import *
 
@@ -28,6 +29,7 @@ NORMALIZE_DICT = {
     'DNA+MRI' : dict(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
     'PILL' : dict(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
     'HIV': None,
+    'breast_cancer': None,
     'Wafer': dict(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
     }
 
@@ -51,7 +53,53 @@ class MultimodalDataset(Dataset):
         mri_data, mri_label = self.mri_dataset[self.mri_indices[idx]]
         
         return (mri_data, dna_data), (mri_label, dna_label)
-    
+
+def read_and_prepare_tabularData(file_path, seed, size=6):
+    """
+    Reads breast cancer tabular data, processes features, one-hot encodes target,
+    and returns PyTorch datasets along with class names.
+    """
+
+    data = pd.read_csv(file_path)
+    data = data.drop(columns="Unnamed: 0")
+    features = ['age_at_diagnosis', 'chemotherapy', 'mutation_count', 'tumor_size', 'tumor_stage']
+    labels = [
+        'cancer_type_detailed_IDC',
+        'cancer_type_detailed_ILC',
+        'cancer_type_detailed_IMM',
+        'cancer_type_detailed_MBC',
+        'cancer_type_detailed_MDLC'
+    ]
+
+    # Ensure these columns are in the DataFrame
+    print("Data columns:", data.columns.tolist())
+
+    # Extract data
+    X = data[features].values
+    y = data[labels].values
+
+    # Normalize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Split the dataset
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_scaled, y, test_size=0.2, random_state=seed
+    )
+
+    # Convert to PyTorch tensors
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    X_test = torch.tensor(X_test, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
+    y_test = torch.tensor(y_test, dtype=torch.float32)
+
+    # Create TensorDatasets
+    trainset = TensorDataset(X_train, y_train)
+    testset = TensorDataset(X_test, y_test)
+
+    return trainset, testset
+
+
 def read_and_prepare_data(file_path, seed, size=6):
     """
     Reads DNA sequence data from a text file and prepares it for modeling.
@@ -203,7 +251,6 @@ def load_datasets(num_clients: int, batch_size: int, resize: int, seed: int, num
     """
     DataLoader = PyGDataLoader if dataset == "hiv" else TorchDataLoader
     list_transforms = [transforms.ToTensor(), transforms.Normalize(**NORMALIZE_DICT[dataset])] if dataset not in ["MMF", "DNA", "hiv"] else None
-    print(dataset)
 
     if dataset == "cifar":
         # Download and transform CIFAR-10 (train and test)
@@ -220,8 +267,7 @@ def load_datasets(num_clients: int, batch_size: int, resize: int, seed: int, num
         trainset, testset = read_and_prepare_data(data_path + dataset + '/human.txt', seed)        
 
     elif dataset == "MMF":        
-        trainset, valset, testset = preprocess_and_split_data(data_path + dataset + '/Audio_Vision_RAVDESS.pkl')                    
-    
+        trainset, valset, testset = preprocess_and_split_data(data_path + dataset + '/Audio_Vision_RAVDESS.pkl')                        
     elif dataset == "DNA+MRI":        
         dataset_dna, dataset_mri = dataset.split("+")         
         if resize is not None:
@@ -237,6 +283,8 @@ def load_datasets(num_clients: int, batch_size: int, resize: int, seed: int, num
         trainset = MultimodalDataset(trainset_dna, trainset_mri)
         testset = MultimodalDataset(testset_dna , testset_mri)
 
+    elif dataset == "breast_cancer":
+        trainset, testset = read_and_prepare_tabularData(data_path + dataset + '/breastCancer.csv', seed)        
     else:
         if resize is not None:
             list_transforms = [transforms.Resize((resize, resize))] + list_transforms
@@ -258,6 +306,8 @@ def load_datasets(num_clients: int, batch_size: int, resize: int, seed: int, num
         print("('0', '1', '2', '3', '4', '5', '6')")
     elif dataset == "hiv":
         print("The training set is created for the classes: ('confirmed inactive (CI)', 'confirmed active (CA)/confirmed moderately active (CM)')")
+    elif dataset == "breast_cancer":
+        print("Data set is create for the classes ('Breast Invasive Ductal Carcinoma (IDC)','Breast Invasive Lobular Carcinoma(IVC)','Breast Invasive Mixed Mucinous Carcinoma (IMMC)','Breast Mixed Ductal and Lobular Carcinoma(MDLC)', 'Metaplastic Breast Cancer (MBC)',)")
     else:
         print(f"The training set is created for the classes : {trainset.classes}")        
 
@@ -265,7 +315,7 @@ def load_datasets(num_clients: int, batch_size: int, resize: int, seed: int, num
     datasets_train = split_data_client(trainset, num_clients, seed)
     if dataset == "MMF":
         datasets_val = split_data_client(valset, num_clients, seed)
-    elif data_path_val and dataset not in ["DNA", "hiv"]:
+    elif data_path_val and dataset not in ["DNA", "hiv","breast_cancer"]:
         valset = datasets.ImageFolder(data_path_val, transform=transformer)
         datasets_val = split_data_client(valset, num_clients, seed)    
         
