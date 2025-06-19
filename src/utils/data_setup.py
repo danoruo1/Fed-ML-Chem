@@ -284,7 +284,7 @@ def load_datasets(num_clients: int, batch_size: int, resize: int, seed: int, num
         testset = MultimodalDataset(testset_dna , testset_mri)
 
     elif dataset == "breast_cancer":
-        trainset, testset = read_and_prepare_tabularData(data_path + dataset + '/breastCancer.csv', seed)        
+        trainset, testset = read_and_prepare_tabularData(data_path + dataset + '/breastCancerResampled.csv', seed)        
     else:
         if resize is not None:
             list_transforms = [transforms.Resize((resize, resize))] + list_transforms
