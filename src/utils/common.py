@@ -122,7 +122,7 @@ def classes_string(name_dataset,datapath=None):
     elif name_dataset in "breast_cancer" or "breast_cancer" in name_dataset:
         classes = ('IDC', 'ILC', 'IMM', 'MDLC', 'MBC')
     elif name_dataset == "kidney_ct":
-        classes = set(x for x in os.listdir("data/kidney_ct") if "csv" not in x)
+        classes = set(x for x in os.listdir("data/kidney_ct/Training") if "csv" not in x)
     else:
         print("Warning problem : unspecified dataset")
         return ()
