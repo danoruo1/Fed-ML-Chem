@@ -77,7 +77,7 @@ def choice_device(device):
 
     return device
 
-def classes_string(name_dataset):
+def classes_string(name_dataset,datapath=None):
     """
     A function to get the classes of the dataset
 
@@ -121,6 +121,8 @@ def classes_string(name_dataset):
         classes = ('Center', 'Donut', 'Edge-Loc', 'Edge-Ring', 'Loc', 'Near-full', 'Random', 'Scratch', 'none')
     elif name_dataset in "breast_cancer" or "breast_cancer" in name_dataset:
         classes = ('IDC', 'ILC', 'IMM', 'MDLC', 'MBC')
+    elif name_dataset == "kidney_ct":
+        classes = set(x for x in os.listdir("data/kidney_ct") if "csv" not in x)
     else:
         print("Warning problem : unspecified dataset")
         return ()
